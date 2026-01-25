@@ -69,7 +69,15 @@ h1{margin:0;color:var(--accent);}
     font-weight:700;
     margin:18px 0;
     box-shadow:0 0 25px rgba(255,193,7,.6);
+    width:50%;
+    height:56px;
+    box-sizing:border-box;
+    display:flex;
+    align-items:center;
+    justify-content:center;
 }
+}
+
 
 .btn:hover{box-shadow:0 0 35px rgba(255,193,7,.9);}
 .btn:active{transform:translateY(4px) scale(.95);}
@@ -163,6 +171,97 @@ audio{width:100%}
     opacity:0;
     transform:translateX(120px);
 }
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+img, a {
+  -webkit-touch-callout: none;
+}
+
+button, div {
+  outline: none;
+}
+.upload-wrapper{
+    position:relative;
+}
+
+.upload-btn{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    overflow:hidden;
+}
+
+/* Loading */
+.upload-btn.loading{
+    width:60px;
+    border-radius:50%;
+    background:#333;
+    box-shadow:none;
+    cursor:wait;
+}
+
+.loader{
+    display:none;
+    width:22px;
+    height:22px;
+    border:3px solid var(--accent);
+    border-bottom-color:transparent;
+    border-radius:50%;
+    animation:spin 1s linear infinite;
+}
+
+.loading .loader{
+    display:block;
+}
+
+.loading .btn-text{
+    display:none;
+}
+
+/* Success */
+.upload-btn.success{
+    background:#22c55e;
+    color:#000;
+    width:60%;
+}
+
+.success-icon{
+    display:none;
+    font-size:18px;
+}
+
+.success .success-icon{
+    display:inline-block;
+}
+
+@keyframes spin{
+    to{transform:rotate(360deg)}
+}
+.btn .check{
+    display:none;
+    margin-left:8px;
+}
+
+.btn.success .check{
+    display:inline;
+}
+
+.btn.loading .btn-text{
+    visibility:hidden;
+}
+
+.btn.success{
+    background:#22c55e;
+    box-shadow:0 0 30px rgba(34,197,94,.8);
+}
 </style>
 </head>
 <script>
@@ -178,11 +277,15 @@ if ("serviceWorker" in navigator) {
         <div class="toggle" id="modeBtn">Mode</div>
     </div>
 <br>
-    <label class="btn">
-        Add Songs
-        <input type="file" id="fileInput" accept="audio/*" multiple>
+<div class="upload-wrapper">
+    <label for="fileInput" class="btn upload-btn" id="addBtn">
+        <span class="btn-text">Add Songs</span>
+        <div class="loader"></div>
+        <span class="success-icon">✓</span>
     </label>
-<br><br>
+    <input type="file" id="fileInput" accept="audio/*" multiple>
+</div>
+<br>
     <div class="audio-box" id="audioBox">
         <audio id="audio" controls></audio>
     </div>
@@ -232,12 +335,38 @@ req.onsuccess=e=>{
 };
 
 /* ---------- ADD ---------- */
-fileInput.onchange=e=>{
+const addBtn = document.getElementById("addBtn");
+const btnText = addBtn.querySelector(".btn-text");
+
+fileInput.onchange = e => {
+    if (!e.target.files.length) return;
+
     vibrate(30);
-    const tx=db.transaction("songs","readwrite");
-    const store=tx.objectStore("songs");
-    [...e.target.files].forEach(f=>store.add({name:f.name,blob:f}));
-    tx.oncomplete=loadSongs;
+
+    // Start animation
+    addBtn.classList.add("loading");
+
+    const tx = db.transaction("songs", "readwrite");
+    const store = tx.objectStore("songs");
+
+    [...e.target.files].forEach(f => {
+        store.add({ name: f.name, blob: f });
+    });
+
+    tx.oncomplete = () => {
+        loadSongs();
+
+        // Success animation
+        addBtn.classList.remove("loading");
+        addBtn.classList.add("success");
+        btnText.textContent = "Added!";
+
+        setTimeout(() => {
+            addBtn.classList.remove("success");
+            btnText.textContent = "Add Songs";
+            fileInput.value = ""; // reset picker
+        }, 2000);
+    };
 };
 
 /* ---------- LOAD ---------- */
