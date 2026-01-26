@@ -262,6 +262,61 @@ button, div {
     background:#2e7d32;
     box-shadow:0 0 30px rgba(46,125,50,.8);
 }
+input[type="range"]{
+    display:block;
+    -webkit-appearance:none;
+    appearance:none;
+    height:6px;
+    background:var(--item);
+    border-radius:10px;
+    outline:none;
+    width:100%
+}
+
+/* Slider thumb */
+input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    width:18px;
+    height:18px;
+    background:var(--accent);
+    border-radius:50%;
+    cursor:pointer;
+    box-shadow:0 0 10px rgba(0,145,234,.6);
+    /* ---------- MEGA BASS UI ---------- */
+.bass-box{
+    display:none;
+    margin-top:12px;
+    padding:14px;
+    border-radius:18px;
+    background:var(--box);
+    animation:slideUp .35s ease;
+}
+
+#bassLabel{
+    text-align:center;
+    font-weight:700;
+    margin-bottom:8px;
+    color:var(--accent);
+    transition:transform .2s ease;
+}
+
+@keyframes slideUp{
+    from{
+        opacity:0;
+        transform:translateY(10px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+/* slider glow while moving */
+input[type="range"]:active::-webkit-slider-thumb{
+    box-shadow:0 0 20px rgba(0,145,234,.9);
+    transform:scale(1.15);
+}
+}
 </style>
 </head>
 <script>
@@ -294,7 +349,12 @@ if ("serviceWorker" in navigator) {
         <div class="ctrl" id="shuffleBtn">Shuffle</div>
         <div class="ctrl" id="repeatBtn">Repeat: OFF</div>
     </div>
-
+    <div class="ctrl" id="bassBtn", style="margin-bottom:20px">Mega Bass</div>
+    <div id="bassControl" class="bass-box">
+    <div id="bassLabel", style="margin-left:5px">Bass: 5.0x</div>
+    <input type="range" id="bassSlider" min="0" max="10" step="0.5" value="5", style="margin-bottom:10px">
+</div>
+<br>
     <div class="playlist" id="playlist"></div>
 </div>
 
@@ -303,6 +363,38 @@ let db,songs=[],currentIndex=-1;
 let shuffle=false,repeat=0;
 
 const audio=document.getElementById("audio");
+/* ---------- MEGA BASS ENGINE ---------- */
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+const audioCtx = new AudioContext();
+
+const source = audioCtx.createMediaElementSource(audio);
+
+/* ---------- LOUDNESS NORMALIZATION ---------- */
+const normalizer = audioCtx.createDynamicsCompressor();
+
+// Tuned for music (not aggressive)
+normalizer.threshold.value = -18; // start compressing louder parts
+normalizer.knee.value = 20;
+normalizer.ratio.value = 3;
+normalizer.attack.value = 0.003;
+normalizer.release.value = 0.25;
+
+/* ---------- MEGA BASS ---------- */
+const bassFilter = audioCtx.createBiquadFilter();
+bassFilter.type = "lowshelf";
+bassFilter.frequency.value = 120;
+bassFilter.gain.value = 0;
+
+/* ---------- CONNECT CHAIN ---------- */
+source
+  .connect(normalizer)
+  .connect(bassFilter)
+  .connect(audioCtx.destination);
+
+// unlock audio on mobile
+document.addEventListener("click",()=>{
+    if(audioCtx.state !== "running") audioCtx.resume();
+},{ once:true });
 const playlist=document.getElementById("playlist");
 const shuffleBtn=document.getElementById("shuffleBtn");
 const repeatBtn=document.getElementById("repeatBtn");
@@ -474,6 +566,45 @@ function updateMedia(){
         if(currentIndex>0) play(currentIndex-1);
     });
 }
+
+
+const bassBtn = document.getElementById("bassBtn");
+const bassSlider = document.getElementById("bassSlider");
+const bassControl = document.getElementById("bassControl");
+const bassLabel = document.getElementById("bassLabel");
+
+/* ---------- MEGA BASS DEFAULT STATE ---------- */
+let bassOn = true; // 👈 ON by default
+
+// initial UI sync
+bassBtn.classList.add("active");
+bassControl.style.display = "block";
+bassFilter.gain.value = bassSlider.value;
+bassLabel.textContent = `MEGA BASS: ${bassSlider.value}x`;
+
+/* ---------- BUTTON ---------- */
+bassBtn.onclick = () => {
+    vibrate(30);
+
+    bassOn = !bassOn;
+
+    bassBtn.classList.toggle("active", bassOn);
+    bassControl.style.display = bassOn ? "block" : "none";
+    bassFilter.gain.value = bassOn ? bassSlider.value : 0;
+};
+
+/* ---------- SLIDER ---------- */
+bassSlider.oninput = () => {
+    if (!bassOn) return;
+
+    bassFilter.gain.value = bassSlider.value;
+    bassLabel.textContent = `Bass: ${bassSlider.value}x`;
+
+    // haptic + animation
+    vibrate(8);
+    bassLabel.style.transform = "scale(1.08)";
+    setTimeout(() => bassLabel.style.transform = "scale(1)", 100);
+};
 </script>
 
 </body>
