@@ -369,15 +369,6 @@ const audioCtx = new AudioContext();
 
 const source = audioCtx.createMediaElementSource(audio);
 
-/* ---------- LOUDNESS NORMALIZATION ---------- */
-const normalizer = audioCtx.createDynamicsCompressor();
-
-// Tuned for music (not aggressive)
-normalizer.threshold.value = -18; // start compressing louder parts
-normalizer.knee.value = 20;
-normalizer.ratio.value = 3;
-normalizer.attack.value = 0.003;
-normalizer.release.value = 0.25;
 
 /* ---------- MEGA BASS ---------- */
 const bassFilter = audioCtx.createBiquadFilter();
@@ -387,7 +378,6 @@ bassFilter.gain.value = 0;
 
 /* ---------- CONNECT CHAIN ---------- */
 source
-  .connect(normalizer)
   .connect(bassFilter)
   .connect(audioCtx.destination);
 
