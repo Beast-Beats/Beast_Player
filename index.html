@@ -4,6 +4,7 @@
 <meta name="theme-color" content="#0077be">  
 <meta name="viewport" content="width=device-width, initial-scale=1.0">  
 <meta charset="UTF-8">  
+<script src="https://cdn.jsdelivr.net/npm/jsmediatags@3.9.7/dist/jsmediatags.min.js"></script>
 <title>Beast Player</title>  <style>  
 :root{  
     --bg:#050a0f;      /* Darker Navy */  
@@ -300,6 +301,8 @@ const repeatBtn=document.getElementById("repeatBtn");
 const fileInput=document.getElementById("fileInput");  
 const audioBox=document.getElementById("audioBox");  
 const modeBtn=document.getElementById("modeBtn");  
+let mediaToken = 0;
+const fallbackArtCache = {};
   
 /* ---------- HAPTIC ---------- */  
 const vibrate=(ms=40)=>navigator.vibrate&&navigator.vibrate(ms);  
@@ -442,29 +445,94 @@ function highlight(){
         s.classList.toggle("active",i===currentIndex);  
     });  
 }  
+function getArtwork(blob, callback){
+    jsmediatags.read(blob, {
+        onSuccess: tag => {
+            const pic = tag.tags.picture;
+            if(!pic) return callback(null);
+
+            const bytes = new Uint8Array(pic.data);
+            const imgBlob = new Blob([bytes], { type: pic.format });
+            callback(URL.createObjectURL(imgBlob));
+        },
+        onError: () => callback(null)
+    });
+}
   
 /* ---------- MEDIA SESSION ---------- */  
-function updateMedia(){  
-    if(!navigator.mediaSession) return;  
-  
-    const colors=["#0d47a1","#1565c0","#1976d2","#0277bd","#01579b"];  
-    const c=colors[Math.floor(Math.random()*colors.length)];  
-  
-    navigator.mediaSession.metadata=new MediaMetadata({  
-        title:songs[currentIndex].name,  
-        artist:"Beast Player",  
-        artwork:[{src:`data:image/svg+xml,  
-        <svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'>  
-        <rect width='300' height='300' fill='${c}'/></svg>`}]  
-    });  
-  
-    navigator.mediaSession.setActionHandler("nexttrack",()=>{  
-        if(currentIndex<songs.length-1) play(currentIndex+1);  
-    });  
-    navigator.mediaSession.setActionHandler("previoustrack",()=>{  
-        if(currentIndex>0) play(currentIndex-1);  
-    });  
-}  
+function updateMedia(){
+    if(!navigator.mediaSession) return;
+
+    const song = songs[currentIndex];
+    const token = ++mediaToken; // 🔒 lock this call
+
+    getArtwork(song.blob, artUrl => {
+
+        // ❌ ignore outdated callbacks
+        if (token !== mediaToken) return;
+
+        // 🎨 fallback artwork
+        if (!artUrl) {
+            if (!fallbackArtCache[song.name]) {
+                fallbackArtCache[song.name] =
+                    generateFallbackArtwork(song.name);
+            }
+            artUrl = fallbackArtCache[song.name];
+        }
+
+        navigator.mediaSession.metadata = new MediaMetadata({
+            title: song.name,
+            artist: "Beast Player",
+            artwork: [{
+                src: artUrl,
+                sizes: "512x512",
+                type: "image/png"
+            }]
+        });
+    });
+}
+function rand(){
+    return Math.floor(Math.random() * 256);
+}
+
+function randomColor(){
+    return `rgb(${rand()}, ${rand()}, ${rand()})`;
+}
+function generateFallbackArtwork(title){
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = 512;
+    const ctx = canvas.getContext("2d");
+
+    // 🎨 unlimited random gradient
+    const grad = ctx.createLinearGradient(0, 0, 512, 512);
+    grad.addColorStop(0, randomColor());
+    grad.addColorStop(1, randomColor());
+
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 512, 512);
+
+    // 🎵 song title text
+    ctx.fillStyle = "rgba(255,255,255,0.9)";
+    ctx.font = "bold 48px system-ui";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    ctx.fillText(title.slice(0, 18), 256, 256);
+
+    return canvas.toDataURL("image/png");
+}
+if ("mediaSession" in navigator) {
+    navigator.mediaSession.setActionHandler("nexttrack", () => {
+        if (shuffle) play(Math.floor(Math.random() * songs.length));
+        else if (currentIndex < songs.length - 1) play(currentIndex + 1);
+        else if (repeat === 2) play(0);
+    });
+
+    navigator.mediaSession.setActionHandler("previoustrack", () => {
+        if (audio.currentTime > 5) audio.currentTime = 0;
+        else if (currentIndex > 0) play(currentIndex - 1);
+    });
+}
 </script>
 </body>  
 </html> 
