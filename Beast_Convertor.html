@@ -35,7 +35,7 @@ body{
   background:var(--bg);
   color:var(--text);
   height:100vh;
-  overflow:hidden; /* 🔒 no page scroll */
+  overflow:hidden; /* ðŸ”’ no page scroll */
 }
 
 .card{
@@ -587,7 +587,7 @@ showOverlay("Processing...", true);
 const offlineCtx = new OfflineAudioContext(
   decoded.numberOfChannels,
   decoded.length,
-  44100
+  decoded.sampleRate
 );
 
 const source = offlineCtx.createBufferSource();
@@ -629,7 +629,7 @@ showOverlay("Encoding MP3 320kbps...", true);
 
 const mp3encoder = new lamejs.Mp3Encoder(
   renderedBuffer.numberOfChannels,
-  44100,
+  renderedBuffer.sampleRate,
   320
 );
 
