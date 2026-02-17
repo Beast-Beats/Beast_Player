@@ -1,4 +1,4 @@
-const CACHE_NAME = "beast-player-v9";
+const CACHE_NAME = "beast-player-v10";
 
 const BASE = self.location.pathname.replace("service-worker.js", "");
 
@@ -16,7 +16,8 @@ const APP_SHELL = [
 
 self.addEventListener("install", event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL))
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(APP_SHELL))
   );
   self.skipWaiting();
 });
@@ -34,11 +35,20 @@ self.addEventListener("activate", event => {
 });
 
 self.addEventListener("fetch", event => {
+
   if (event.request.method !== "GET") return;
 
+  // ðŸ”¥ IMPORTANT: Handle page reload / app launch offline
+  if (event.request.mode === "navigate") {
+    event.respondWith(
+      caches.match(BASE + "index.html")
+    );
+    return;
+  }
+
+  // Cache First Strategy
   event.respondWith(
-    caches.match(event.request).then(response => {
-      return response || fetch(event.request);
-    })
+    caches.match(event.request)
+      .then(response => response || fetch(event.request))
   );
 });
