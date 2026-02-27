@@ -1,0 +1,114 @@
+{
+  "name": "Beast Player",
+  "short_name": "Beast Player",
+  "description": "Offline music player with playlists, artwork, shuffle, repeat and sleep timer.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "id": "beast-player-v1",
+
+  "categories": ["music", "entertainment", "utilities"],
+
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+
+  "share_target": {
+    "action": "./index.html",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "files": [
+        {
+          "name": "audio",
+          "accept": [
+            "audio/mpeg",
+            "audio/mp3",
+            "audio/mp4",
+            "audio/m4a",
+            "audio/x-m4a",
+            "audio/ogg",
+            "audio/flac",
+            "audio/wav",
+            "audio/aac",
+            "audio/opus",
+            "audio/webm",
+            "audio/aiff",
+            "audio/x-aiff",
+            "audio/wma",
+            "audio/x-ms-wma",
+            "audio/*",
+            ".mp3",
+            ".mp4",
+            ".m4a",
+            ".m4b",
+            ".ogg",
+            ".oga",
+            ".flac",
+            ".wav",
+            ".aac",
+            ".opus",
+            ".webm",
+            ".wma",
+            ".aiff",
+            ".aif"
+          ]
+        }
+      ]
+    }
+  },
+
+  "file_handlers": [
+    {
+      "action": "./index.html",
+      "accept": {
+        "audio/mpeg":     [".mp3"],
+        "audio/mp4":      [".mp4", ".m4a", ".m4b"],
+        "audio/ogg":      [".ogg", ".oga"],
+        "audio/flac":     [".flac"],
+        "audio/wav":      [".wav"],
+        "audio/aac":      [".aac"],
+        "audio/opus":     [".opus"],
+        "audio/webm":     [".webm"],
+        "audio/x-ms-wma": [".wma"],
+        "audio/aiff":     [".aiff", ".aif"]
+      }
+    }
+  ],
+
+  "shortcuts": [
+    {
+      "name": "Now Playing",
+      "short_name": "Now Playing",
+      "description": "Open Beast Player",
+      "url": "./index.html",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  }
+}
