@@ -1,3 +1,4 @@
+
 {
   "name": "Beast Player",
   "short_name": "Beast Player",
@@ -44,36 +45,12 @@
         {
           "name": "audio",
           "accept": [
-            "audio/mpeg",
-            "audio/mp3",
-            "audio/mp4",
-            "audio/m4a",
-            "audio/x-m4a",
-            "audio/ogg",
-            "audio/flac",
-            "audio/wav",
-            "audio/aac",
-            "audio/opus",
-            "audio/webm",
-            "audio/aiff",
-            "audio/x-aiff",
-            "audio/wma",
-            "audio/x-ms-wma",
-            "audio/*",
-            ".mp3",
-            ".mp4",
-            ".m4a",
-            ".m4b",
-            ".ogg",
-            ".oga",
-            ".flac",
-            ".wav",
-            ".aac",
-            ".opus",
-            ".webm",
-            ".wma",
-            ".aiff",
-            ".aif"
+            "audio/mpeg", "audio/mp3", "audio/mp4", "audio/m4a",
+            "audio/x-m4a", "audio/ogg", "audio/flac", "audio/wav",
+            "audio/aac", "audio/opus", "audio/webm", "audio/aiff",
+            "audio/x-aiff", "audio/wma", "audio/x-ms-wma", "audio/*",
+            ".mp3", ".mp4", ".m4a", ".m4b", ".ogg", ".oga", ".flac",
+            ".wav", ".aac", ".opus", ".webm", ".wma", ".aiff", ".aif"
           ]
         }
       ]
@@ -96,19 +73,5 @@
         "audio/aiff":     [".aiff", ".aif"]
       }
     }
-  ],
-
-  "shortcuts": [
-    {
-      "name": "Now Playing",
-      "short_name": "Now Playing",
-      "description": "Open Beast Player",
-      "url": "./index.html",
-      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
-    }
-  ],
-
-  "launch_handler": {
-    "client_mode": "navigate-existing"
-  }
+  ]
 }
